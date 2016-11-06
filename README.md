@@ -1,19 +1,42 @@
-# Heroku Multi Procfile buildpack
+# Heroku Hub-And-Spoke Buildpack
 
-Imagine you have a single code base, which has a few different applications within it... or at least the ability to run a few different applications. Or, maybe you're Google with your mono repo?
+A strategy for deploying N hub-and-spoke Rails applications with M engines in a single repo on Heroku.
 
-In any case, how do you manage this on Heroku? You don't. Heroku applications assume one repo to one application.
-
-Enter the Monorepo buildpack, which is a copy of [heroku-buildpack-multi-procfile](https://github.com/heroku/heroku-buildpack-multi-procfile) except it moves the target path in to the root, rather than just the Procfile. This helps for ruby apps etc.
+https://github.com/nonrational/unibus
 
 # Usage
 
-1. Write a bunch of ~~Procfiles~~ apps and scatter them through out your code base.
-2. Create a bunch of Heroku apps.
-3. For each app, set `APP_BASE=relative/path/to/app/root`, and of course:
-   `heroku buildpacks:add -a <app> https://github.com/lstoll/heroku-buildpack-monorepo`
-4. For each app, `git push git@heroku.com:<app> master`
+1. Create some spoke rails applications and at least one hub engine for them all
+  - See https://github.com/nonrational/unibus for an example layout
+2. Create one Heroku application for every spoke app.
+  - You'll probabaly end up with a pair per rails app e.g. `app-X-staging`/`app-X-production`
+  - You can even use [pipelines](https://devcenter.heroku.com/articles/pipelines). Go nuts.
+  - You cannot use review apps. :cry:
+3. For each app, set:
 
-# Authors
+    ```
+    APP_BASE=<spoke-app-name>
+    APP_DEPS=<engine-one> <engine-two>
+    ENGINE_PATH=./.engines
+    ```
 
-Andrew Gwozdziewycz <apg@heroku.com> and Cyril David <cyx@heroku.com> and now Lincoln Stoll <lstoll@heroku.com>
+4. Add this buildpack _before the Ruby buildpack_.
+
+    ```
+    heroku buildpacks:add -r <heroku-remote> --index 0 \
+      https://github.com/nonrational/heroku-buildpack-hub-spoke`
+    ```
+
+5. :shipit:. And often.
+
+## Author
+
+- Alan Norton <alan@mealpal.com> [@nonrational](https://github.com/nonrational)
+
+### Giants
+
+... _upon whose shoulders the author(s) stood_.
+
+- Andrew Gwozdziewycz <apg@heroku.com>
+- Cyril David <cyx@heroku.com>
+- Lincoln Stoll <lstoll@heroku.com>
