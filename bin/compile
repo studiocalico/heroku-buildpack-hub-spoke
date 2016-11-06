@@ -9,22 +9,32 @@ CACHE_DIR=$2
 ENV_DIR=$3
 
 if [ ! -f ${ENV_DIR}/APP_BASE ]; then
-    echo "APP_BASE was not set. Aborting" | indent
+    echo "APP_BASE was not set. Aborting!" | indent
 fi
+
+if [ ! -f ${ENV_DIR}/APP_DEPS ]; then
+    echo "APP_DEPS was not set. Aborting!" | indent
+fi
+
 APP_BASE=$(cat ${ENV_DIR}/APP_BASE)
+APP_DEPS=$(cat ${ENV_DIR}/APP_DEPS)
 
 (
-    stage=`mktemp -d` &&
-    mv ${BUILD_DIR}/${APP_BASE} ${stage} &&
-    shopt -s dotglob nullglob &&
-    rm -rf ${BUILD_DIR}/* &&
-    mv ${stage}/${APP_BASE}/* ${BUILD_DIR}
+    stage=`mktemp -d`                                                             && # make a temp directory to stage "correct" layout
+    mv ${BUILD_DIR}/${APP_BASE} ${stage}                                          && # stage the app folder we care about
+    for app_dir in ${APP_DEPS}; do mv ${BUILD_DIR}/${app_dir} ${stage}; done      && # stage the dependency folders we also care about
+
+    shopt -s dotglob nullglob                                                     && # include files that start with . and resolve missing patterns to null
+
+    rm -rf ${BUILD_DIR}/*                                                         && # clean the target
+    mv ${stage}/${APP_BASE}/* ${BUILD_DIR}                                        && # move the application folder's contents into the root
+    for app_dir in ${APP_DEPS}; do mv ${stage}/${app_dir} ${BUILD_DIR}/../; done   ; # move the dependencies into a sibling of APP_BASE so relative paths work
 )
 
 if ! [ $? ]; then
-    echo "FAILED to copy a Procfile" | indent
+    echo "FAILED to stage ${APP_BASE} ${APP_DEPS}" | indent
     exit 1
 fi
 
-echo "Copied ${APP_BASE} to root of app successfully" | indent
+echo "Copied ${APP_BASE} ${APP_DEPS} to application root successfully." | indent
 
