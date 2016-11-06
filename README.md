@@ -1,8 +1,8 @@
 # Heroku Hub-And-Spoke Buildpack
 
-A strategy for deploying N hub-and-spoke Rails applications with M engines in a single repo on Heroku.
+A strategy for deploying monorepo one-app-per-audience Rails applications on Heroku.
 
-https://github.com/nonrational/unibus
+Sample Application: https://github.com/nonrational/unibus
 
 <img src='http://i.imgur.com/58wavHO.gif' width=300>
 
