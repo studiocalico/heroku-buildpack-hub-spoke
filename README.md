@@ -4,6 +4,8 @@ A strategy for deploying N hub-and-spoke Rails applications with M engines in a 
 
 https://github.com/nonrational/unibus
 
+<img src='http://i.imgur.com/58wavHO.gif' width=300>
+
 # Usage
 
 1. Create some spoke rails applications and at least one hub engine for them all
