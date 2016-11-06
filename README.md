@@ -23,7 +23,7 @@ https://github.com/nonrational/unibus
 4. Add this buildpack _before the Ruby buildpack_.
 
     ```
-    heroku buildpacks:add -r <heroku-remote> --index 0 https://github.com/nonrational/heroku-buildpack-hub-spoke
+    heroku buildpacks:add -r <heroku-remote> --index 1 https://github.com/nonrational/heroku-buildpack-hub-spoke
     ```
 
 5. :shipit:. And often.
