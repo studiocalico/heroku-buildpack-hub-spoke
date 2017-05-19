@@ -8,37 +8,29 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 ENV_DIR=$3
 
-if [ ! -f ${ENV_DIR}/APP_BASE ]; then
-    echo "APP_BASE was not set. Aborting!" | indent
-fi
-
-if [ ! -f ${ENV_DIR}/GEMS_PATH ]; then
-    echo "GEMS_PATH was not set. Aborting!" | indent
-fi
-
-if [ ! -f ${ENV_DIR}/ENGINE_PATH ]; then
-    echo "ENGINE_PATH was not set. Aborting!" | indent
-fi
-
-APP_BASE=$(cat ${ENV_DIR}/APP_BASE)       # ex. `customer`
-GEMS_PATH=$(cat ${ENV_DIR}/GEMS_PATH)       # ex. `gems`
-VENDOR_GEMS_PATH=$(cat ${ENV_DIR}/VENDOR_GEMS_PATH) # ex. `vendor/gems`
-
-(
-    stage=`mktemp -d`                                                                         && # make a temp directory to stage "correct" layout
-    mv ${BUILD_DIR}/${APP_BASE} ${stage}/${APP_BASE}                                                      && # stage the app folder we care about
-    mv ${BUILD_DIR}/${GEMS_PATH} ${stage}/${GEMS_PATH}                  && # stage the dependency folders we also care about
-    shopt -s dotglob nullglob                                                                 && # include files that start with . and resolve missing patterns to null
-    rm -rf ${BUILD_DIR}/*                                                                     && # clean the target
-    mv ${stage}/${APP_BASE}/* ${BUILD_DIR}/                                                   && # move the application folder's contents into the root
-    rm -rf ${BUILD_DIR}/${VENDOR_GEMS_PATH}                                                      && # remove symlinks to engine dependencies
-    mv ${stage}/${GEMS_PATH} ${BUILD_DIR}/${VENDOR_GEMS_PATH}   ; # move the dependencies into ENGINE_PATH inside BUILD_DIR
-)
-
-if ! [ $? ]; then
-    echo "FAILED to stage ${APP_BASE}+${GEMS_PATH} (to ${VENDOR_GEMS_PATH})" | indent
+if [ ! -f ${ENV_DIR}/SITE ]; then
+    echo "SITE was not set. Aborting!" | indent
     exit 1
 fi
 
-echo "Copied ${APP_BASE} ${GEMS_PATH} to application root successfully." | indent
+SITE=$(cat ${ENV_DIR}/SITE)       # ex. `customer`
+
+(
+    stage=`mktemp -d`                                                                       
+    mv ${BUILD_DIR}/sites/${SITE} ${stage}                                                      
+    rm -rf ${stage}/vendor/gems
+    mv ${BUILD_DIR}/gems ${stage}/gems
+    shopt -s dotglob nullglob                                                             
+    rm -rf ${BUILD_DIR}/*                                                                 
+    mv ${stage}/${SITE}/* ${BUILD_DIR}/                                                   
+    rm -rf ${BUILD_DIR}/vendor/gems
+    mv ${stage}/gems ${BUILD_DIR}/vendor/
+)
+
+if ! [ $? ]; then
+    echo "FAILED to stage ${SITE}" | indent
+    exit 1
+fi
+
+echo "Copied ${SITE} to application root successfully." | indent
 
